@@ -5,10 +5,13 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  registry: registry.temeva.com
+  ls_repository: labserver
+  stc_repository: stcc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  ls_tag: "5.09"
+  stcc_tag: "5.09"
 
 imagePullSecrets: []
 nameOverride: ""
