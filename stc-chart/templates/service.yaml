@@ -1,15 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "stc-chart.fullname" . }}
+  name: {{ .Release.name }}-lssvc
   labels:
-    {{- include "stc-chart.labels" . | nindent 4 }}
+    
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: 80
       protocol: TCP
       name: http
   selector:
-    {{- include "stc-chart.selectorLabels" . | nindent 4 }}
+      matchLabels:
+        app: labserver

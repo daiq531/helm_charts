@@ -1,64 +1,64 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ include "stc-chart.fullname" . }}
-  labels:
-    {{- include "stc-chart.labels" . | nindent 4 }}
-spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
-  selector:
-    matchLabels:
-      {{- include "stc-chart.selectorLabels" . | nindent 6 }}
-  template:
-    metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "stc-chart.selectorLabels" . | nindent 8 }}
-    spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "stc-chart.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: {{ include "stc-chart.fullname" . }}
+#  labels:
+#    {{- include "stc-chart.labels" . | nindent 4 }}
+#spec:
+#  {{- if not .Values.autoscaling.enabled }}
+#  replicas: {{ .Values.replicaCount }}
+#  {{- end }}
+#  selector:
+#    matchLabels:
+#      {{- include "stc-chart.selectorLabels" . | nindent 6 }}
+#  template:
+#    metadata:
+#      {{- with .Values.podAnnotations }}
+#      annotations:
+#        {{- toYaml . | nindent 8 }}
+#      {{- end }}
+#      labels:
+#        {{- include "stc-chart.selectorLabels" . | nindent 8 }}
+#    spec:
+#      {{- with .Values.imagePullSecrets }}
+#      imagePullSecrets:
+#        {{- toYaml . | nindent 8 }}
+#      {{- end }}
+#      serviceAccountName: {{ include "stc-chart.serviceAccountName" . }}
+#      securityContext:
+#        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+#      containers:
+#        - name: {{ .Chart.Name }}
+#          securityContext:
+#            {{- toYaml .Values.securityContext | nindent 12 }}
+#          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+#          imagePullPolicy: {{ .Values.image.pullPolicy }}
+#          ports:
+#            - name: http
+#              containerPort: 80
+#              protocol: TCP
+#          livenessProbe:
+#            httpGet:
+#              path: /
+#              port: http
+#          readinessProbe:
+#            httpGet:
+#              path: /
+#              port: http
+#          resources:
+#            {{- toYaml .Values.resources | nindent 12 }}
+#      {{- with .Values.nodeSelector }}
+#      nodeSelector:
+#        {{- toYaml . | nindent 8 }}
+#      {{- end }}
+#      {{- with .Values.affinity }}
+#      affinity:
+#        {{- toYaml . | nindent 8 }}
+#      {{- end }}
+#      {{- with .Values.tolerations }}
+#      tolerations:
+#        {{- toYaml . | nindent 8 }}
+#      {{- end }}
 
 ---
 apiVersion: apps/v1
@@ -66,21 +66,25 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-labserver
   labels: 
-    - app: labserver
+    app: labserver
 spec:
   replicas: 1
   template:
     metadata:
       annotations:
       labels:
-        {{- include "stc-chart.selectorLabels" . | nindent 8 }}
+        app: labserver
     spec:
       containers:
         - name: {{ .Release.Name }}-labserver
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+          securityContext: {}
           image: "{{ .Values.image.registry }}/{{ .Values.image.ls_repository}}:{{ .Values.image.ls_tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env: 
+            - name: "SPIRENTD_LICENSE_FILE"
+              value: {{ quote .Values.license.addr }}
+            - name: "IQ_SERVER_ADDR"
+              value: {{ quote .Values.iq.addr }}
           ports:
             - name: http
               containerPort: 80
@@ -93,7 +97,13 @@ spec:
             httpGet:
               path: /
               port: http
-
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}
+          
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -103,20 +113,37 @@ metadata:
     - app: stc
 spec:
   replicas: {{ .Values.replicaCount }}
+  selector:
+      matchLabels:
+        app: stc
   template:
     metadata:
       annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+                { "name" : {{quote .Values.stc.test_network_name}},
+                  "interfaceRequest": "eth1" }
+        ]'
       labels:
-        {{- include "stc-chart.selectorLabels" . | nindent 8 }}
+        app: stc
     spec:
-      containers:
+      containers:      
         - name: {{ .Release.Name }}-stc
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+          securityContext: {
+            "capabilities": {
+              "add": [
+                "SYS_ADMIN",
+                "NET_ADMIN",
+                "SYS_NICE",
+                "SYSLOG",
+                "SYS_PTRACE",
+                "SYS_RAWIO"
+              ]
+            }
+          }
           image: "{{ .Values.image.registry }}/{{ .Values.image.stc_repository}}:{{ .Values.image.stc_tag | default 5.19.0366 }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
+            - name: mgmt
               containerPort: 80
               protocol: TCP
           livenessProbe:
@@ -127,3 +154,5 @@ spec:
             httpGet:
               path: /
               port: http
+          command:
+            - /sbin/init

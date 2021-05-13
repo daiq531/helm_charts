@@ -10,8 +10,8 @@ image:
   stc_repository: stcc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  ls_tag: "5.09"
-  stcc_tag: "5.09"
+  ls_tag: "5.19"
+  stcc_tag: "5.19.0366"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -84,3 +84,9 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+license:
+  addr: 10.108.1.1
+  
+iq:
+  addr: 127.0.0.1
