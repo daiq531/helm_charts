@@ -6,6 +6,7 @@ replicaCount: 1
 
 image:
   registry: registry.temeva.com
+#  registry: registry.oriontest.net
   ls_repository: labserver
   stc_repository: stcc
   pullPolicy: IfNotPresent
@@ -40,8 +41,8 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
-  port: 80
+  type: NodePort 
+  port: 8081
 
 ingress:
   enabled: false
@@ -86,7 +87,10 @@ tolerations: []
 affinity: {}
 
 license:
-  addr: 10.108.1.1
+  addr: 10.180.109.190 
   
 iq:
   addr: 127.0.0.1
+
+stc:
+  test_network_name: "macvlan-conf"
