@@ -30,6 +30,9 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+            - name: ssh 
+              containerPort: 22 
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /
@@ -87,13 +90,5 @@ spec:
             - name: mgmt
               containerPort: 80
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
           command:
             - /sbin/init
