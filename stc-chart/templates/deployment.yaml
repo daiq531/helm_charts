@@ -86,9 +86,24 @@ spec:
           }
           image: "{{ .Values.image.registry }}/{{ .Values.image.stc_repository}}:{{ .Values.image.stc_tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: "SPIRENT_ADMIN"
+              value: "--mode container --ipv4mode container --ipv6mode container --speed 10G --driver none --benchmark True" 
           ports:
-            - name: mgmt
-              containerPort: 80
+            - name: chassis-port-t
+              containerPort: 40004
+              protocol: TCP
+            - name: chassis-port-u
+              containerPort: 40004
+              protocol: UDP
+            - name: group-port
+              containerPort: 51204
+              protocol: TCP
+            - name: upgrade-port
+              containerPort: 1666
+              protocol: TCP
+            - name: rest-port
+              containerPort: 9090
               protocol: TCP
           command:
             - /sbin/init

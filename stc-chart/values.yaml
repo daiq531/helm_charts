@@ -5,16 +5,16 @@
 replicaCount: 2 
 
 image:
-#  registry: registry.temeva.com
-  registry: registry.oriontest.net
+  registry: registry.temeva.com
+#  registry: registry.oriontest.net
   ls_repository: labserver
   stc_repository: stc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-#  ls_tag: "5.19"
-#  stc_tag: "5.19.0366"
-  ls_tag: "latest"
-  stc_tag: "latest"
+  ls_tag: "5.19"
+  stc_tag: "5.19.0366"
+#  ls_tag: "latest"
+#  stc_tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -95,4 +95,4 @@ iq:
   addr: 127.0.0.1
 
 stc:
-  test_network_name: "macvlan-conf"
+  test_network_name: "macvlan-ens4"
